@@ -1,0 +1,84 @@
+# Builds a binary per platform with Bun when a tag like v1.2.3 is pushed, and
+# puts them on a GitHub release with homewright.json and the translations.
+# HomewrightHQ installs from there.
+#
+# Linux uses Bun's glibc builds: Bun's musl builds need the musl loader, which
+# HomewrightHQ's Debian image does not have. x64 uses "baseline", so the binary
+# also runs on older CPUs without AVX2. No --minify: it breaks matter.js's
+# logger.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  # the domain from homewright.json
+  DOMAIN: matter_bridge
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      - run: npm ci
+      - run: npm test
+      - name: Compile
+        run: |
+          mkdir -p dist
+          build() { bun build --compile --target="$1" src/main.js --outfile "dist/$DOMAIN-$2"; }
+          build bun-windows-x64-baseline x86_64-pc-windows-msvc.exe
+          build bun-linux-x64-baseline   x86_64-unknown-linux-gnu
+          build bun-linux-arm64          aarch64-unknown-linux-gnu
+          build bun-darwin-arm64         aarch64-apple-darwin
+          ls -la dist
+      # the Linux binary as HomewrightHQ runs it
+      - run: BRIDGE_BIN=dist/$DOMAIN-x86_64-unknown-linux-gnu npm test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: dist/*
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: dist
+      # A release published on github.com already exists; then only add the files.
+      - run: |
+          # release notes: the commit subjects since the previous tag
+          prev=$(git describe --tags --abbrev=0 --match 'v*' "$GITHUB_REF_NAME^" 2>/dev/null || true)
+          {
+            if [ -n "$prev" ]; then echo "## Changes since $prev"; else echo "## Changes"; fi
+            echo
+            git log --no-merges --format='- %s' ${prev:+$prev..}"$GITHUB_REF_NAME"
+          } > notes.md
+          cat notes.md
+          files="dist/* homewright.json translations.da.json translations.en.json"
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" $files --clobber
+            if [ -z "$(gh release view "$GITHUB_REF_NAME" --json body -q .body)" ]; then
+              gh release edit "$GITHUB_REF_NAME" --notes-file notes.md
+            fi
+          else
+            gh release create "$GITHUB_REF_NAME" $files --title "$GITHUB_REF_NAME" --notes-file notes.md
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}

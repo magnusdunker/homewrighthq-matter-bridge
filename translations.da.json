@@ -1,0 +1,15 @@
+{
+  "title": "Matter-bro",
+  "steps": {
+    "user": { "title": "Matter-bro", "description": "Vælg de enheder, Apple Home, Google Home og Alexa skal kunne se og styre. Bagefter viser en notifikation koden til parring." },
+    "init": { "title": "Matter-bro", "description": "Vælg de enheder, broen viser. Broen starter igen, og appen ser ændringen efter lidt tid." }
+  },
+  "fields": { "name": "Navn", "entities": "Enheder", "port": "Port" },
+  "hints": {
+    "name": "Broens navn i Apple Home, Google Home og Alexa",
+    "entities": "Lys, kontakter, ventilatorer, gardiner, termostater og sensorer for temperatur, fugt, lys, døre, bevægelse og vand",
+    "port": "UDP-porten til Matter"
+  },
+  "errors": { "required": "Skal udfyldes", "no_entities": "Vælg mindst én enhed", "bad_port": "Porten skal være mellem 1024 og 65535" },
+  "abort": { "already_configured": "Der er allerede en Matter-bro. Ret den under Indstillinger." }
+}

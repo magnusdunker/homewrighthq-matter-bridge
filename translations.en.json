@@ -1,0 +1,15 @@
+{
+  "title": "Matter bridge",
+  "steps": {
+    "user": { "title": "Matter bridge", "description": "Pick the devices Apple Home, Google Home and Alexa should see and control. Afterwards a notification shows the pairing code." },
+    "init": { "title": "Matter bridge", "description": "Pick the devices the bridge shows. The bridge restarts, and the app sees the change after a while." }
+  },
+  "fields": { "name": "Name", "entities": "Devices", "port": "Port" },
+  "hints": {
+    "name": "The bridge's name in Apple Home, Google Home and Alexa",
+    "entities": "Lights, switches, fans, covers, thermostats and sensors for temperature, humidity, light, doors, motion and water",
+    "port": "The UDP port for Matter"
+  },
+  "errors": { "required": "Required", "no_entities": "Pick at least one device", "bad_port": "The port must be between 1024 and 65535" },
+  "abort": { "already_configured": "There is already a Matter bridge. Change it under Options." }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "homewright-matter-bridge",
+  "version": "0.1.0",
+  "description": "Matter bridge for HomewrightHQ: shows chosen entities in Apple Home, Google Home and Alexa",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/main.js",
+    "check": "node --check sdk/homewright-plugin.js && node --check src/stdout.js && node --check src/logs.js && node --check src/main.js && node --check src/mapping.js && node --check src/bridge.js && node --check src/integration.js",
+    "test": "node --test",
+    "build": "bun build --compile src/main.js --outfile dist/matter_bridge"
+  },
+  "dependencies": {
+    "@matter/general": "0.18.0",
+    "@matter/main": "0.18.0",
+    "@matter/nodejs": "0.18.0"
+  },
+  "devDependencies": {
+    "@project-chip/matter.js": "0.18.0"
+  }
+}

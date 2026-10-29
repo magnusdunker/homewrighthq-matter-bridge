@@ -27,12 +27,16 @@ import { WaterLeakDetectorDevice } from '@matter/main/devices/water-leak-detecto
 import { WindowCoveringDevice } from '@matter/main/devices/window-covering';
 import '@matter/nodejs';
 import { createHash } from 'node:crypto';
+import pkg from '../package.json' with { type: 'json' };
 
 import { endpointId, fromLift, kindOf, label, lightCall, reachable, thermostatLimits, toMatter } from './mapping.js';
 
 // matter.js uses the test vendor id: the bridge is not certified
 const VENDOR_ID = 0xfff1;
 const PRODUCT_ID = 0x8000;
+// the version in package.json, which the release tag must match
+const VERSION = pkg.version;
+const VERSION_NUMBER = VERSION.split('.').reduce((n, p) => n * 100 + (Number.parseInt(p, 10) || 0), 0);
 /** How long a controller's changes to one entity are collected before the call. */
 const SETTLE_MS = 120;
 
@@ -175,7 +179,11 @@ export class Bridge {
         vendorId: VendorId(VENDOR_ID),
         nodeLabel: name,
         productName: 'HomewrightHQ Matter bridge',
-        productLabel: 'HomewrightHQ',
+        productLabel: 'Matter bridge',
+        hardwareVersion: 1,
+        hardwareVersionString: '1',
+        softwareVersion: VERSION_NUMBER,
+        softwareVersionString: VERSION,
         productId: PRODUCT_ID,
         serialNumber: this.o.serial,
         uniqueId: uniqueId(this.o.serial, 'bridge'),
